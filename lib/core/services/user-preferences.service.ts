@@ -151,6 +151,7 @@ export class UserPreferencesService {
      */
     setStoragePrefix(value: string) {
         this.storage.setItem('USER_PROFILE', value || 'GUEST');
+        this.initUserPreferenceStatus();
     }
 
     /**
