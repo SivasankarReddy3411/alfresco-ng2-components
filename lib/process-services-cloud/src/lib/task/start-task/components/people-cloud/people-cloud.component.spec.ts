@@ -145,6 +145,25 @@ describe('PeopleCloudComponent', () => {
                 expect(errorMessage.textContent).toContain('ADF_CLOUD_START_TASK.ERROR.MESSAGE');
             });
         }));
+
+        it('should populate placeholder when title is present', async(() => {
+            component.title = 'ADF_TASK_LIST.START_TASK.FORM.LABEL.ASSIGNEE';
+            fixture.detectChanges();
+            const matLabel: HTMLInputElement = <HTMLInputElement> element.querySelector('mat-label');
+            fixture.whenStable().then( () => {
+                fixture.detectChanges();
+                expect(matLabel.textContent).toEqual('ADF_TASK_LIST.START_TASK.FORM.LABEL.ASSIGNEE');
+            });
+        }));
+
+        it('should not populate placeholder when title is present', async(() => {
+            const matLabel: HTMLInputElement = <HTMLInputElement> element.querySelector('mat-label');
+            fixture.detectChanges();
+            fixture.whenStable().then( () => {
+                fixture.detectChanges();
+                expect(matLabel.textContent).toEqual('');
+            });
+        }));
     });
 
     describe('when application name defined', () => {
@@ -528,97 +547,63 @@ describe('PeopleCloudComponent', () => {
                 expect(removeUserSpy).toHaveBeenCalled();
             });
         }));
-    });
 
-    it('should emit warning if are invalid users', (done) => {
-        spyOn(identityService, 'findUserByUsername').and.returnValue(Promise.resolve([]));
-        const warnMessage = { message: 'INVALID_PRESELECTED_USERS', users: [{ username: 'invalidUsername' }] };
-        component.validate = true;
-        component.preSelectUsers = <any> [{ username: 'invalidUsername' }];
-        fixture.detectChanges();
-        component.loadSinglePreselectUser();
-        component.warning.subscribe((response) => {
-            expect(response).toEqual(warnMessage);
-            expect(response.message).toEqual(warnMessage.message);
-            expect(response.users).toEqual(warnMessage.users);
-            expect(response.users[0].username).toEqual('invalidUsername');
-            done();
-        });
-    });
-
-    it('should filter user by id if validate true', async(() => {
-        const findByIdSpy = spyOn(identityService, 'findUserById').and.returnValue(Promise.resolve(mockUsers));
-        component.mode = 'multiple';
-        component.validate = true;
-        component.preSelectUsers = <any> [{ id: mockUsers[1].id }, { id: mockUsers[2].id }];
-        fixture.detectChanges();
-        fixture.whenStable().then(() => {
-            component.filterPreselectUsers().then((result) => {
-                expect(findByIdSpy).toHaveBeenCalled();
-                expect(component.userExists(result)).toEqual(true);
-            });
-        });
-    }));
-
-    it('should filter user by username if validate true', async(() => {
-        const findUserByUsernameSpy = spyOn(identityService, 'findUserByUsername').and.returnValue(Promise.resolve(mockUsers));
-        component.mode = 'multiple';
-        component.validate = true;
-        component.preSelectUsers = <any> [{ username: mockUsers[1].username }, { username: mockUsers[2].username }];
-        fixture.detectChanges();
-        fixture.whenStable().then(() => {
-            component.filterPreselectUsers().then((result) => {
-                expect(findUserByUsernameSpy).toHaveBeenCalled();
-                expect(component.userExists(result)).toEqual(true);
-            });
-        });
-    }));
-
-    it('should filter user by email if validate true', async(() => {
-        const findUserByEmailSpy = spyOn(identityService, 'findUserByEmail').and.returnValue(Promise.resolve(mockUsers));
-        component.mode = 'multiple';
-        component.validate = true;
-        component.preSelectUsers = <any> [{ email: mockUsers[1].email }, { email: mockUsers[2].email }];
-        fixture.detectChanges();
-        fixture.whenStable().then(() => {
-            component.filterPreselectUsers().then((result) => {
-                expect(findUserByEmailSpy).toHaveBeenCalled();
-                expect(component.userExists(result)).toEqual(true);
-            });
-        });
-    }));
-
-    it('should not filter the preselect user in single selection mode', async ((done) => {
-        spyOn(identityService, 'findUserByUsername').and.returnValue(Promise.resolve(mockUsers));
-        component.mode = 'single';
-        component.validate = true;
-        component.preSelectUsers = <any> [{ username: mockUsers[1].username }];
-        fixture.detectChanges();
-        const inputHTMLElement: HTMLInputElement = <HTMLInputElement> element.querySelector('input');
-        inputHTMLElement.focus();
-        inputHTMLElement.dispatchEvent(new Event('input'));
-        inputHTMLElement.dispatchEvent(new Event('keyup'));
-        inputHTMLElement.dispatchEvent(new Event('keydown'));
-        inputHTMLElement.value = mockUsers[1].username;
-        fixture.detectChanges();
-        fixture.whenStable().then(() => {
+        it('should emit warning if are invalid users', (done) => {
+            spyOn(identityService, 'findUserByUsername').and.returnValue(Promise.resolve([]));
+            const warnMessage = { message: 'INVALID_PRESELECTED_USERS', users: [{ username: 'invalidUsername' }] };
+            component.validate = true;
+            component.preSelectUsers = <any> [{ username: 'invalidUsername' }];
             fixture.detectChanges();
-            expect(fixture.debugElement.queryAll(By.css('mat-option')).length).toBe(3);
+            component.loadSinglePreselectUser();
+            component.warning.subscribe((response) => {
+                expect(response).toEqual(warnMessage);
+                expect(response.message).toEqual(warnMessage.message);
+                expect(response.users).toEqual(warnMessage.users);
+                expect(response.users[0].username).toEqual('invalidUsername');
+                done();
+            });
         });
-    }));
 
-    it('should populate placeholder when title is present', () => {
-        fixture.detectChanges();
-        component.title = 'ADF_TASK_LIST.START_TASK.FORM.LABEL.ASSIGNEE';
-        const inputHTMLElement: HTMLInputElement = <HTMLInputElement> element.querySelector('mat-label');
-        fixture.detectChanges();
-        expect(inputHTMLElement.textContent).toEqual('ADF_TASK_LIST.START_TASK.FORM.LABEL.ASSIGNEE');
-    });
+        it('should filter user by id if validate true', async(() => {
+            const findByIdSpy = spyOn(identityService, 'findUserById').and.returnValue(Promise.resolve(mockUsers));
+            component.mode = 'multiple';
+            component.validate = true;
+            component.preSelectUsers = <any> [{ id: mockUsers[1].id }, { id: mockUsers[2].id }];
+            fixture.detectChanges();
+            fixture.whenStable().then(() => {
+                component.filterPreselectUsers().then((result) => {
+                    expect(findByIdSpy).toHaveBeenCalled();
+                    expect(component.userExists(result)).toEqual(true);
+                });
+            });
+        }));
 
-    it('should not populate placeholder when title is present', () => {
-        fixture.detectChanges();
-        const inputHTMLElement: HTMLInputElement = <HTMLInputElement> element.querySelector('mat-label');
-        fixture.detectChanges();
-        expect(inputHTMLElement.textContent).toEqual('');
+        it('should filter user by username if validate true', async(() => {
+            const findUserByUsernameSpy = spyOn(identityService, 'findUserByUsername').and.returnValue(Promise.resolve(mockUsers));
+            component.mode = 'multiple';
+            component.validate = true;
+            component.preSelectUsers = <any> [{ username: mockUsers[1].username }, { username: mockUsers[2].username }];
+            fixture.detectChanges();
+            fixture.whenStable().then(() => {
+                component.filterPreselectUsers().then((result) => {
+                    expect(findUserByUsernameSpy).toHaveBeenCalled();
+                    expect(component.userExists(result)).toEqual(true);
+                });
+            });
+        }));
+
+        it('should filter user by email if validate true', async(() => {
+            const findUserByEmailSpy = spyOn(identityService, 'findUserByEmail').and.returnValue(Promise.resolve(mockUsers));
+            component.mode = 'multiple';
+            component.validate = true;
+            component.preSelectUsers = <any> [{ email: mockUsers[1].email }, { email: mockUsers[2].email }];
+            fixture.detectChanges();
+            fixture.whenStable().then(() => {
+                component.filterPreselectUsers().then((result) => {
+                    expect(findUserByEmailSpy).toHaveBeenCalled();
+                    expect(component.userExists(result)).toEqual(true);
+                });
+            });
+        }));
     });
 });
